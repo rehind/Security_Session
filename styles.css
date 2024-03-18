@@ -1,9 +1,9 @@
-﻿body {
+body {
     margin: 0;
     padding-bottom: 100px;
-    padding-top: 70px;
+    padding-top: 100px;
     color: rgb(0, 0, 0);
-    background: linear-gradient(to bottom, rgb(204, 204, 204) , rgb(128, 128, 128));
+    background: linear-gradient(to bottom, rgb(204, 204, 204), rgb(158, 158, 158));
     background-repeat: no-repeat;
 }
 
@@ -79,4 +79,15 @@
 
 .kuar {
     text-align: right;
+}
+
+.vid {
+    width: 80%;
+    z-index: 0;
+}
+
+.images {
+    position: relative;
+    width: 80%;
+    z-index: -1;
 }
