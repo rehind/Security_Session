@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The List</title>
+<style>
+  :root{
+    --ink: #16302c;
+    --ink-soft: #3d5652;
+    --paper: #f6f3ec;
+    --paper-raised: #ffffff;
+    --line: #d8d2c2;
+    --teal: #1f5c5a;
+    --teal-dim: #dfe9e6;
+    --mustard: #c98a2c;
+    --mustard-soft: #f3e3c6;
+    --done: #93a39d;
+    --danger: #b3492f;
+    --shadow: 0 1px 2px rgba(22,48,44,0.06), 0 4px 12px rgba(22,48,44,0.06);
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--paper);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px);
+    background-size: 100% 2.1em;
+    color: var(--ink);
+    font-family: 'Iowan Old Style','Georgia','Times New Roman',serif;
+    min-height:100vh;
+    padding: 2.5rem 1.25rem 6rem;
+  }
+  .util{
+    font-family: 'SF Mono','Consolas','Menlo',monospace;
+    letter-spacing: 0.02em;
+  }
+  .wrap{
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 0.6rem;
+  }
+  header h1{
+    font-size: 1.9rem;
+    font-weight: 600;
+    margin:0;
+    letter-spacing: -0.01em;
+  }
+  header .status{
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+  }
+  header .status.live::before{
+    content:"●";
+    color: var(--teal);
+    margin-right: 0.35em;
+  }
+  header .status.off::before{
+    content:"●";
+    color: var(--danger);
+    margin-right: 0.35em;
+  }
+
+  .add-category{
+    display:flex;
+    gap:0.5rem;
+    margin-bottom: 2rem;
+  }
+  .add-category input{
+    flex:1;
+  }
+
+  input[type=text]{
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--paper-raised);
+    color: var(--ink);
+  }
+  input[type=text]:focus{
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px var(--teal-dim);
+  }
+
+  button{
+    font-family: inherit;
+    cursor:pointer;
+    border:none;
+    border-radius: 6px;
+    padding: 0.55rem 1rem;
+    font-size: 0.95rem;
+    background: var(--teal);
+    color: #fff;
+    transition: transform 0.08s ease, opacity 0.15s ease;
+  }
+  button:hover{ opacity:0.92; }
+  button:active{ transform: scale(0.97); }
+  button.ghost{
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+  button.icon{
+    background: transparent;
+    color: var(--ink-soft);
+    padding: 0.3rem 0.5rem;
+    font-size: 1.1rem;
+    line-height:1;
+  }
+  button.icon:hover{ color: var(--danger); }
+
+  .category{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .category-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--mustard-soft), transparent 180%);
+  }
+  .category-head h2{
+    margin:0;
+    font-size: 1.15rem;
+    font-weight:600;
+    display:flex;
+    align-items:baseline;
+    gap:0.6rem;
+  }
+  .category-head .count{
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    font-weight:400;
+  }
+  .items{
+    list-style:none;
+    margin:0;
+    padding: 0.4rem 0.4rem;
+  }
+  .item{
+    display:flex;
+    align-items:center;
+    gap:0.7rem;
+    padding: 0.55rem 0.6rem;
+    border-radius: 6px;
+  }
+  .item:hover{ background: rgba(31,92,90,0.05); }
+  .tick{
+    flex:none;
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: 5px;
+    cursor:pointer;
+    position:relative;
+    background: var(--paper-raised);
+  }
+  .tick.checked{
+    background: var(--teal);
+    border-color: var(--teal);
+  }
+  .tick.checked::after{
+    content:"";
+    position:absolute;
+    left: 6px; top: 2px;
+    width: 6px; height: 11px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(40deg);
+  }
+  .item span{
+    flex:1;
+    font-size: 1rem;
+  }
+  .item.checked span{
+    color: var(--done);
+    text-decoration: line-through;
+    text-decoration-color: var(--done);
+  }
+  .add-item{
+    display:flex;
+    gap:0.5rem;
+    padding: 0.6rem 0.9rem 0.9rem;
+  }
+  .add-item input{ flex:1; font-size:0.92rem; padding:0.45rem 0.6rem;}
+  .add-item button{ padding: 0.45rem 0.85rem; font-size:0.88rem;}
+
+  .empty{
+    text-align:center;
+    color: var(--ink-soft);
+    padding: 3rem 1rem;
+    font-style: italic;
+  }
+
+  footer{
+    max-width:640px;
+    margin: 3rem auto 0;
+    text-align:center;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>The List</h1>
+    <div id="status" class="status util off">connecting</div>
+  </header>
+
+  <div class="add-category">
+    <input type="text" id="newCategoryInput" placeholder="New category, e.g. Groceries" maxlength="60">
+    <button id="addCategoryBtn">Add category</button>
+  </div>
+
+  <div id="categories"></div>
+  <div id="emptyState" class="empty" style="display:none;">Nothing here yet — add a category to start.</div>
+</div>
+
+<footer class="util">shared list · synced live</footer>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, doc, onSnapshot, setDoc, getDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ====== YOUR FIREBASE CONFIG ======
+  const firebaseConfig = {
+    apiKey: "AIzaSyAWjO7aM_gNlT7zaUvhK8sW48nZM-1Nic8",
+    authDomain: "notes-6f8b4.firebaseapp.com",
+    projectId: "notes-6f8b4",
+    storageBucket: "notes-6f8b4.firebasestorage.app",
+    messagingSenderId: "846325527336",
+    appId: "1:846325527336:web:c5c4980eae2f9a358f561d"
+  };
+  // ===================================
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const docRef = doc(db, "shared-list", "main");
+
+  const statusEl = document.getElementById("status");
+  const categoriesEl = document.getElementById("categories");
+  const emptyStateEl = document.getElementById("emptyState");
+  const newCategoryInput = document.getElementById("newCategoryInput");
+  const addCategoryBtn = document.getElementById("addCategoryBtn");
+
+  let state = { categories: [] };
+  let unsubscribed = false;
+
+  function uid(){
+    return Math.random().toString(36).slice(2, 10);
+  }
+
+  async function ensureDoc(){
+    const snap = await getDoc(docRef);
+    if(!snap.exists()){
+      await setDoc(docRef, { categories: [] });
+    }
+  }
+
+  async function save(newState){
+    state = newState;
+    await setDoc(docRef, state);
+  }
+
+  function render(){
+    categoriesEl.innerHTML = "";
+    emptyStateEl.style.display = state.categories.length ? "none" : "block";
+
+    state.categories.forEach(cat => {
+      const catEl = document.createElement("div");
+      catEl.className = "category";
+
+      const doneCount = cat.items.filter(i => i.done).length;
+
+      catEl.innerHTML = `
+        <div class="category-head">
+          <h2>${escapeHtml(cat.name)} <span class="count util">${doneCount}/${cat.items.length}</span></h2>
+          <button class="icon" data-action="delete-category" data-cat="${cat.id}" title="Delete category">✕</button>
+        </div>
+        <ul class="items"></ul>
+        <div class="add-item">
+          <input type="text" placeholder="Add item…" data-cat-input="${cat.id}" maxlength="120">
+          <button data-action="add-item" data-cat="${cat.id}">Add</button>
+        </div>
+      `;
+
+      const itemsUl = catEl.querySelector(".items");
+      cat.items.forEach(item => {
+        const li = document.createElement("li");
+        li.className = "item" + (item.done ? " checked" : "");
+        li.innerHTML = `
+          <div class="tick ${item.done ? "checked" : ""}" data-action="toggle" data-cat="${cat.id}" data-item="${item.id}"></div>
+          <span>${escapeHtml(item.text)}</span>
+          <button class="icon" data-action="delete-item" data-cat="${cat.id}" data-item="${item.id}" title="Remove">✕</button>
+        `;
+        itemsUl.appendChild(li);
+      });
+
+      categoriesEl.appendChild(catEl);
+    });
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement("div");
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // Event delegation for all category/item actions
+  categoriesEl.addEventListener("click", async (e) => {
+    const target = e.target.closest("[data-action]");
+    if(!target) return;
+    const action = target.dataset.action;
+    const catId = target.dataset.cat;
+
+    if(action === "toggle"){
+      const itemId = target.dataset.item;
+      const next = structuredClone(state);
+      const cat = next.categories.find(c => c.id === catId);
+      const item = cat.items.find(i => i.id === itemId);
+      item.done = !item.done;
+      await save(next);
+    }
+
+    if(action === "delete-category"){
+      if(!confirm("Delete this whole category?")) return;
+      const next = structuredClone(state);
+      next.categories = next.categories.filter(c => c.id !== catId);
+      await save(next);
+    }
+
+    if(action === "delete-item"){
+      const itemId = target.dataset.item;
+      const next = structuredClone(state);
+      const cat = next.categories.find(c => c.id === catId);
+      cat.items = cat.items.filter(i => i.id !== itemId);
+      await save(next);
+    }
+
+    if(action === "add-item"){
+      const input = categoriesEl.querySelector(`[data-cat-input="${catId}"]`);
+      const text = input.value.trim();
+      if(!text) return;
+      const next = structuredClone(state);
+      const cat = next.categories.find(c => c.id === catId);
+      cat.items.push({ id: uid(), text, done: false });
+      input.value = "";
+      await save(next);
+    }
+  });
+
+  categoriesEl.addEventListener("keydown", async (e) => {
+    if(e.key === "Enter" && e.target.matches("[data-cat-input]")){
+      const catId = e.target.dataset.catInput;
+      const btn = categoriesEl.querySelector(`[data-action="add-item"][data-cat="${catId}"]`);
+      btn.click();
+    }
+  });
+
+  addCategoryBtn.addEventListener("click", async () => {
+    const name = newCategoryInput.value.trim();
+    if(!name) return;
+    const next = structuredClone(state);
+    next.categories.push({ id: uid(), name, items: [] });
+    newCategoryInput.value = "";
+    await save(next);
+  });
+  newCategoryInput.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") addCategoryBtn.click();
+  });
+
+  // Live sync
+  (async () => {
+    try{
+      await ensureDoc();
+      onSnapshot(docRef, (snap) => {
+        if(snap.exists()){
+          state = snap.data();
+          if(!state.categories) state.categories = [];
+          render();
+        }
+        statusEl.textContent = "live";
+        statusEl.classList.remove("off");
+        statusEl.classList.add("live");
+      }, (err) => {
+        console.error(err);
+        statusEl.textContent = "connection error";
+        statusEl.classList.remove("live");
+        statusEl.classList.add("off");
+      });
+    }catch(err){
+      console.error(err);
+      statusEl.textContent = "setup needed — see README";
+    }
+  })();
+</script>
+
+</body>
+</html>
