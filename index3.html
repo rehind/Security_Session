@@ -285,8 +285,19 @@
   }
 
   async function save(newState){
+    // Update the screen immediately — don't wait for Firestore to round-trip back.
     state = newState;
-    await setDoc(docRef, state);
+    render();
+    try{
+      await setDoc(docRef, state);
+    }catch(err){
+      console.error("Save failed:", err);
+      alert(
+        "Couldn't save to the shared list (" + err.code + ").\n\n" +
+        "This usually means Firestore's rules aren't set to allow writes yet. " +
+        "See the README's privacy section, or check the browser console for details."
+      );
+    }
   }
 
   function render(){
